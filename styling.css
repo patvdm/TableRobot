@@ -1,0 +1,13 @@
+#robotpic {
+	width: 100px;
+	height: 100px;
+	position: relative;
+	margin-left: 600px;
+	margin-top: 200px;
+}
+
+#table{
+    width:500px;
+    height:500px;
+    background-image: url('Tabletop.jpg');
+}

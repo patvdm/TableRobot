@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+	 <link rel="stylesheet" href="styling.css">
+</head>
+<!-- <script src="jquery-3.1.1.min.js"></script>  JQUERY not allowed--> 
+<body>
+<h1>Please enter commands to the robot,<br>Start by placing the robot</h1>
+<h2>Use the buttons, or type commands e.g. "PLACE", "LEFT", "RIGHT", "MOVE", "REPORT" </h2>
+
+<input type="text" id="txtInput" placeholder="Place,0,4,South" />
+<input type="button" id="btnInput" value="Process Command"/>
+<input type="button" id="btnLeft" value="Turn Left" onclick="left()"/>
+<input type="button" id="btnRight" value="Turn Right" onclick="right()"/>
+<input type="button" id="btnMove" value="Move" onclick="move()"/>
+<input type="button" id="btnReport" value="Report" onclick="report()"/>
+<p id="outputTxt">The Robot is currently not on the table</p>
+
+<div id="table">
+	<img id="robotpic" src="robot.png" alt="Robot Picture" >
+</div>
+</body>
+
+<script>
+
+var coordinates;
+var direction;
+var outputfield = document.getElementById("outputTxt");
+const rowlimit = 5; //zero index
+const collimit = 5; //zero index
+
+
+
+function readInput(input) {
+	validflag = 0
+	switch(input.substring(0,5).toUpperCase()){
+	    case "PLACE":
+	        place(input);
+	        validflag = 1;
+	        break;
+	    case "RIGHT":
+	        right();
+	        validflag = 1;
+	        break;
+	}
+	switch(input.substring(0,4).toUpperCase()){
+	    case "MOVE":
+	        move();
+	        validflag = 1;
+	        break;
+	    case "LEFT":
+	        left();
+	        validflag = 1;
+	        break;
+	}
+	if (input.substring(0,6).toUpperCase() == "REPORT"){
+		report();
+		validflag = 1;
+	}
+	if (validflag == 0) {
+		outputfield.innerHTML = "Not a valid command, please use PLACE, LEFT, RIGHT, MOVE or REPORT"
+	}
+
+}
+
+
+function place(inputstring) {
+	//Error checking
+	var errorFlag = 0;
+	var str_array = inputstring.split(',');
+	if (str_array.length != 4){
+		outputfield.innerHTML = "To Place the robot, please enter 4 values seperated by comma's, eg. 'PLACE,0,4,SOUTH'";
+		errorFlag = 1;
+	}
+	else{
+		var row = parseInt(str_array[1]);
+		var col = parseInt(str_array[2]);
+		var dir = str_array[3];
+		if (!Number.isInteger(row) || !Number.isInteger(col)){
+			outputfield.innerHTML = ("Row and column need to be integer values");
+			errorFlag = 1;
+		}
+		else if ((row > rowlimit-1 || row < 0) || (col > collimit-1 || col < 0)){
+			outputfield.innerHTML = ("The robot has fallen off the table! please select values from 0 to 4 to stay on the table" );
+			errorFlag = 1;
+		}
+		else if (dir.toUpperCase() != "NORTH" && dir.toUpperCase() != "SOUTH" && dir.toUpperCase() != "EAST" && dir.toUpperCase() != "WEST") {
+			outputfield.innerHTML = (dir + ' is not a valid direction, please select "NORTH", "SOUTH", "EAST", or "WEST"');
+			errorFlag = 1;
+		}
+	}
+		//Valid Input
+	if (errorFlag == 0) {
+			coordinates = [row,col];
+			direction = dir.toUpperCase();
+			outputfield.innerHTML = ("The robot has been placed successfully at " + coordinates + " facing " + direction);
+			moveImg();
+	}	
+}
+
+function move() {
+	if (direction == null){
+		outputfield.innerHTML = "The robot needs to be placed before it can move";
+	}
+	else{
+		switch (direction) {
+	    case "NORTH":
+	    	var newcoord = coordinates[1]+1;
+	    	if (newcoord < rowlimit) {
+	        	coordinates[1] = newcoord;
+	    	}
+	        break;
+	    case "EAST":
+	    	var newcoord = coordinates[0]+1;
+	    	if (newcoord < collimit) {
+	        	coordinates[0] = newcoord;
+	    	}
+	        break;
+	    case "SOUTH":
+	    	var newcoord = coordinates[1]-1;
+	    	if (newcoord >= 0) {
+	        	coordinates[1] = newcoord;
+	    	}
+	        break;
+	    case "WEST":
+	    	var newcoord = coordinates[0]-1;
+	    	if (newcoord >= 0) {
+	        	coordinates[0] = newcoord;
+	    	}
+	        break;	        	
+		}
+		outputfield.innerHTML = "The robot's new coordinates is " + coordinates + " and is facing " + direction;
+		moveImg();
+	}
+
+}
+
+function left() {
+	if (direction == null){
+		outputfield.innerHTML = "The robot needs to be placed before it can move";
+	}
+	else{
+		switch (direction) {
+	    case "NORTH":
+	        direction = "WEST";
+	        break;
+	     case "WEST":
+	        direction = "SOUTH";
+	        break;
+	     case "SOUTH":
+	        direction = "EAST";
+	        break;
+	     case "EAST":
+	        direction = "NORTH";
+	        break;
+		}
+		outputfield.innerHTML = "The robot has turned to face " + direction;
+		moveImg()
+	}
+}
+
+function right() {
+	if (direction == null){
+		outputfield.innerHTML = "The robot needs to be placed before it can move";
+	}
+	else{
+		switch (direction) {
+	    case "NORTH":
+	        direction = "EAST";
+	        break;
+	     case "EAST":
+	        direction = "SOUTH";
+	        break;
+	     case "SOUTH":
+	        direction = "WEST";
+	        break;
+	     case "WEST":
+	        direction = "NORTH";
+	        break;
+		}
+		outputfield.innerHTML = "The robot has turned to face " + direction;
+		moveImg()
+	}
+}
+
+function report() {
+	if (direction == null){
+		outputfield.innerHTML = "The robot has not yet been placed";
+	}
+	else{
+	outputfield.innerHTML = "The robot's coordinates are " + coordinates + " and it is facing " + direction;
+	}
+}
+
+
+function moveImg() {
+	var curoffsetX = 0 + (coordinates[0] * 100)
+	var curoffsetY = 400 - (coordinates[1] * 100)
+	switch (direction) {
+	    case "NORTH":
+	        rotation = "180";
+	        break;
+	     case "EAST":
+	        rotation = "270";
+	        break;
+	     case "SOUTH":
+	        rotation = "0";
+	        break;
+	     case "WEST":
+	        rotation = "90";
+	        break;
+		} 
+	document.getElementById("robotpic").style.marginLeft = curoffsetX + "px";
+	document.getElementById("robotpic").style.marginTop = curoffsetY + "px";
+	document.getElementById("robotpic").style.transform = "rotate(" + rotation + "deg)";
+}
+
+
+//Perform action(click the button) on pressing ENTER
+document.getElementById("txtInput")
+    .addEventListener("keyup", function(event) {
+    event.preventDefault();
+    if (event.keyCode == 13) {
+        document.getElementById("btnInput").click();
+    }
+});
+
+var button = document.getElementById("btnInput");
+button.onclick = function() {
+    readInput(document.getElementById("txtInput").value);
+}
+
+
+
+</script>
+
+</html>
